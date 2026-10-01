@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phân loại cảm xúc tiếng Việt</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px;color:#1f2937}
+textarea{width:100%;height:110px;padding:10px;font:inherit;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box}
+button{margin-top:10px;padding:9px 18px;border:0;border-radius:8px;background:#1f3a5f;color:#fff;font:inherit;cursor:pointer}
+.bar{height:10px;border-radius:5px;background:#e2e8f0;margin:4px 0 10px}.bar i{display:block;height:100%;border-radius:5px;background:#1f3a5f}
+small{color:#64748b}#res{margin-top:18px}
+</style></head><body>
+<h2>Phân loại cảm xúc phản hồi tiếng Việt</h2>
+<small>Mô hình đang dùng: {{ model }}</small>
+<textarea id="t" maxlength="500" placeholder="Ví dụ: Giảng viên dạy rất dễ hiểu và nhiệt tình."></textarea>
+<button id="b">Dự đoán</button><div id="res"></div>
+<script>
+const $=id=>document.getElementById(id);
+$("b").onclick=async()=>{
+  const r=await fetch("/api/predict",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:$("t").value})});
+  const d=await r.json(),out=$("res");out.textContent="";
+  if(!r.ok){out.textContent=d.error;return}
+  const h=document.createElement("p");h.innerHTML="<b></b> <small></small>";
+  h.firstChild.textContent=d.label;h.lastChild.textContent="(độ tin cậy "+Math.round(d.confidence*100)+"%)";out.appendChild(h);
+  Object.entries(d.probs).forEach(([k,v])=>{const l=document.createElement("div");l.textContent=k+": "+Math.round(v*100)+"%";
+    const b=document.createElement("div");b.className="bar";const i=document.createElement("i");i.style.width=v*100+"%";b.appendChild(i);out.append(l,b)});
+};
+</script></body></html>
